@@ -1,0 +1,24 @@
+{
+  "name": "3d experiment",
+  "version": "1.0.000",
+  "description": "3d experiment",
+  "author": {
+    "name": "Naftali Andrade Santos",
+    "team": "NAS"
+  },
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "dependencies",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+  },
+  "dependencies": {
+    "jquery": "~2.1.4",
+    "gl-matrix": "~2.3.1"
+  }
+}
