@@ -39,7 +39,9 @@ function ThreeDWorld(canvas){
     this.pMatrix = mat4.create();
 
     this.triangleVertexPositionBuffer = null;
+    this.triangleVertexColorBuffer = null;
     this.squareVertexPositionBuffer = null;
+    this.squareVertexColorBuffer = null;
 
     this.initBuffers();
     this.loadNextShader();
@@ -49,6 +51,7 @@ function ThreeDWorld(canvas){
 ThreeDWorld.prototype.initBuffers = function() {
     var gl = this.context;
 
+    // Triangle positioning
     this.triangleVertexPositionBuffer  = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.triangleVertexPositionBuffer);
 
@@ -62,6 +65,21 @@ ThreeDWorld.prototype.initBuffers = function() {
     this.triangleVertexPositionBuffer.itemSize = 3;
     this.triangleVertexPositionBuffer.numItems = 3;
 
+    // Triangle coloring
+    this.triangleVertexColorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.triangleVertexColorBuffer);
+
+    var colors = [
+        1.0, 0.0, 0.0, 1.0, // red, green, blue and alpha
+        0.0, 1.0, 0.0, 1.0, // red, green, blue and alpha
+        0.0, 0.0, 1.0, 1.0  // red, green, blue and alpha
+    ];
+
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+    this.triangleVertexColorBuffer.itemSize = 4;
+    this.triangleVertexColorBuffer.numItems = 3;
+
+    // Square positioning
     this.squareVertexPositionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVertexPositionBuffer);
 
@@ -75,6 +93,18 @@ ThreeDWorld.prototype.initBuffers = function() {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     this.squareVertexPositionBuffer.itemSize = 3;
     this.squareVertexPositionBuffer.numItems = 4;
+
+    this.squareVertexColorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVertexColorBuffer);
+    
+    colors = []
+    for (var i=0; i < 4; i++) {
+      colors = colors.concat([0.5, 0.5, 1.0, 1.0]);
+    }
+
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+    this.squareVertexColorBuffer.itemSize = 4;
+    this.squareVertexColorBuffer.numItems = 4;
 };
 
 ThreeDWorld.prototype.setMatrixUniforms = function() {
@@ -121,6 +151,11 @@ ThreeDWorld.prototype.setupShaders = function() {
 
     gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);
 
+    this.shaderProgram.vertexColorAttribute = 
+        gl.getAttribLocation(this.shaderProgram, "aVertexColor");
+
+    gl.enableVertexAttribArray(this.shaderProgram.vertexColorAttribute);
+
     this.shaderProgram.pMatrixUniform = 
         gl.getUniformLocation(this.shaderProgram, "uPMatrix");
     this.shaderProgram.mvMatrixUniform = 
@@ -150,6 +185,10 @@ ThreeDWorld.prototype.drawTriangle = function(gl) {
     gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, 
         this.triangleVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
     
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.triangleVertexColorBuffer);
+    gl.vertexAttribPointer(this.shaderProgram.vertexColorAttribute, 
+        this.triangleVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
     this.setMatrixUniforms();
     gl.drawArrays(gl.TRIANGLES, 0, this.triangleVertexPositionBuffer.numItems);
 };
@@ -161,6 +200,10 @@ ThreeDWorld.prototype.drawSquare = function(gl) {
     gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, 
         this.squareVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
     
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVertexColorBuffer);
+    gl.vertexAttribPointer(this.shaderProgram.vertexColorAttribute, 
+        this.squareVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
     this.setMatrixUniforms();
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.squareVertexPositionBuffer.numItems);
 };
