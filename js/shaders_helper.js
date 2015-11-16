@@ -1,5 +1,5 @@
 ShadersHelper = {
-    baseShaderPath: "/js/shaders/",
+    baseShaderPath: "./js/shaders/",
     gl: null,
 
     /**
