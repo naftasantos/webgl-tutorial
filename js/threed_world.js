@@ -36,7 +36,11 @@ function ThreeDWorld(canvas){
     ];
 
     this.mvMatrix = mat4.create();
+    this.mvMatrixStack = [];
     this.pMatrix = mat4.create();
+
+    this.rTriangle = 0;
+    this.rSquare = 0;
 
     this.triangleVertexPositionBuffer = null;
     this.triangleVertexColorBuffer = null;
@@ -164,6 +168,9 @@ ThreeDWorld.prototype.setupShaders = function() {
 
 ThreeDWorld.prototype.update = function(gameTime) {
     this.fps = gameTime.fps;
+
+    this.rTriangle += 90 * gameTime.time;
+    this.rSquare += 74 * gameTime.time;
 };
 
 ThreeDWorld.prototype.draw = function(context) {
@@ -181,6 +188,10 @@ ThreeDWorld.prototype.draw = function(context) {
 ThreeDWorld.prototype.drawTriangle = function(gl) {
     mat4.translate(this.mvMatrix, [-1.5, 0.0, -7.0]);
 
+    this.mvPushMatrix();
+    
+    mat4.rotate(this.mvMatrix, Utils.degToRad(this.rTriangle), [0, 1, 0]);
+
     gl.bindBuffer(gl.ARRAY_BUFFER, this.triangleVertexPositionBuffer);
     gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, 
         this.triangleVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
@@ -191,11 +202,17 @@ ThreeDWorld.prototype.drawTriangle = function(gl) {
 
     this.setMatrixUniforms();
     gl.drawArrays(gl.TRIANGLES, 0, this.triangleVertexPositionBuffer.numItems);
+
+    this.mvPopMatrix();
 };
 
 ThreeDWorld.prototype.drawSquare = function(gl) {
     mat4.translate(this.mvMatrix, [3.0, 0.0, 0.0]);
     
+    this.mvPushMatrix();
+    
+    mat4.rotate(this.mvMatrix, Utils.degToRad(this.rSquare), [1, 0, 0]);
+
     gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVertexPositionBuffer);
     gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, 
         this.squareVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
@@ -206,6 +223,8 @@ ThreeDWorld.prototype.drawSquare = function(gl) {
 
     this.setMatrixUniforms();
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.squareVertexPositionBuffer.numItems);
+
+    this.mvPopMatrix();
 };
 
 ThreeDWorld.prototype.drawFps = function(context) {
@@ -217,3 +236,17 @@ ThreeDWorld.prototype.drawFps = function(context) {
 ThreeDWorld.prototype.reset = function() {
 
 };
+
+ThreeDWorld.prototype.mvPushMatrix = function() {
+    var copy = mat4.create();
+    mat4.set(this.mvMatrix, copy);
+    this.mvMatrixStack.push(copy);
+};
+
+ThreeDWorld.prototype.mvPopMatrix = function() {
+    if (this.mvMatrixStack.length === 0) {
+        throw("Invalid Pop Matrix!");
+    }
+
+    this.mvMatrix = this.mvMatrixStack.pop();
+}
